@@ -31,62 +31,60 @@
 
       var difference = Math.abs(date2 - date1) / (1000 * 60 * 60);
 
-      // Update daily results table
-      var dailyTable = document.getElementById('daily-results');
-      var newRow = dailyTable.insertRow(-1);
-      var cell1 = newRow.insertCell(0);
-      var cell2 = newRow.insertCell(1);
-      var cell3 = newRow.insertCell(2);
-      var cell4 = newRow.insertCell(3);
+      var dailyTable = document.getElementById('daily-result');
+      var weeklyTable = document.getElementById('weekly-result');
+      var monthlyTable = document.getElementById('monthly-result');
 
-      var startTime = new Date(date1);
-      var endTime = new Date(date2);
-      cell1.innerHTML = date1.toLocaleDateString('fr-FR');
-      cell2.innerHTML = time1.join(':');
-      cell3.innerHTML = time2.join(':');
-      cell4.innerHTML = difference.toFixed(2);
+      // Update daily result table
+      var dailyRow = dailyTable.insertRow(-1);
+      dailyRow.insertCell(0).innerHTML = date1.toLocaleDateString('en-US');
+      dailyRow.insertCell(1).innerHTML = time1.join(':');
+      dailyRow.insertCell(2).innerHTML = time2.join(':');
+      dailyRow.insertCell(3).innerHTML = difference.toFixed(2);
 
-      // Update weekly results table
-      var weeklyTable = document.getElementById('weekly-results');
-      var currentWeekNumber = getWeekNumber(date1);
-      var weekRow = weeklyTable.querySelector(`tr[data-week-number="${currentWeekNumber}"]`);
+      // Update weekly result table
+      var weekNumber = getWeekNumber(date1);
+      var weeklyRow = weeklyTable.insertRow(-1);
+      weeklyRow.insertCell(0).innerHTML = weekNumber;
+      weeklyRow.insertCell(1).innerHTML = time1.join(':');
+      weeklyRow.insertCell(2).innerHTML = time2.join(':');
+      weeklyRow.insertCell(3).innerHTML = difference.toFixed(2);
 
-      if (!weekRow) {
-        weekRow = weeklyTable.insertRow(-1);
-        var weekCell1 = weekRow.insertCell(0);
-        var weekCell2 = weekRow.insertCell(1);
-        weekCell1.textContent = currentWeekNumber;
-        weekCell2.textContent = difference.toFixed(2);
-        weekRow.setAttribute('data-week-number', currentWeekNumber);
+      // Update monthly result table
+      var monthStart;
+      if (date1.getDate() >= 26) {
+        monthStart = new Date(date1.getFullYear(), date1.getMonth() + 1, 26);
       } else {
-        var totalHours = parseFloat(weekRow.cells[1].textContent) || 0;
-        totalHours += difference;
-        weekRow.cells[1].textContent = totalHours.toFixed(2);
+        monthStart = new Date(date1.getFullYear(), date1.getMonth(), 26);
       }
-
-      // Sort tables by date
-      sortTableByDate('daily-results');
-      sortTableByDate('weekly-results');
-    }
-
-    function sortTableByDate(tableId) {
-      var table = document.getElementById(tableId);
-      var rows = Array.from(table.getElementsByTagName('tr')).slice(1); // Ignore header row
-      var sortedRows = rows.sort(function(a, b) {
-        var dateA = new Date(a.cells[0].textContent);
-        var dateB = new Date(b.cells[0].textContent);
-        return dateA - dateB;
-      });
-      sortedRows.forEach(function(row) {
-        table.appendChild(row); // Append sorted rows to the table
-      });
+      var monthEnd = new Date(date1.getFullYear(), date1.getMonth() + 1, 25);
+      var monthTotal = 0;
+      if (date1 >= monthStart && date1 <= monthEnd) {
+        monthTotal += difference;
+      }
+      var monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(monthStart);
+      var existingRow = null;
+      for (var i = 1; i < monthlyTable.rows.length; i++) {
+        if (monthlyTable.rows[i].cells[0].innerHTML === monthName) {
+          existingRow = monthlyTable.rows[i];
+          break;
+        }
+      }
+      if (existingRow) {
+        var currentTotal = parseFloat(existingRow.cells[1].innerHTML);
+        existingRow.cells[1].innerHTML = (currentTotal + monthTotal).toFixed(2);
+      } else {
+        var monthlyRow = monthlyTable.insertRow(-1);
+        monthlyRow.insertCell(0).innerHTML = monthName;
+        monthlyRow.insertCell(1).innerHTML = monthTotal.toFixed(2);
+      }
     }
 
     function getWeekNumber(date) {
       var d = new Date(date);
       d.setHours(0, 0, 0);
-      d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-      var yearStart = new Date(d.getFullYear(), 0, 1);
+      d.setDate(d.getDate() + 4 - (d.getDay() || 7)); // Set to Thursday: current date + 4 - current day number, and if it's Sunday, set it to 7
+      var yearStart = new Date(d.getFullYear(), 0, 1); // January 1st
       return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
   </script>
@@ -105,20 +103,32 @@
       <input type="time" id="time2" class="border border-gray-300 py-2 px-4">
     </div>
     <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="calculateDifference()">Calculate</button>
-    <h2 class="text-xl font-bold mt-4">Daily Results</h2>
-    <table id="daily-results" class="mt-4">
+
+    <h2 class="text-xl font-bold mt-8 mb-4">Daily Result</h2>
+    <table id="daily-result" class="mb-8">
       <tr>
         <th>Date</th>
-        <th>Heure début</th>
-        <th>Heures fin</th>
-        <th>Heures travaillées</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Hours Worked</th>
       </tr>
     </table>
-    <h2 class="text-xl font-bold mt-4">Weekly Results</h2>
-    <table id="weekly-results" class="mt-4">
+
+    <h2 class="text-xl font-bold mt-8 mb-4">Weekly Result</h2>
+    <table id="weekly-result" class="mb-8">
       <tr>
-        <th>Semaine</th>
-        <th>Total heures</th>
+        <th>Week</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Hours Worked</th>
+      </tr>
+    </table>
+
+    <h2 class="text-xl font-bold mt-8 mb-4">Monthly Result</h2>
+    <table id="monthly-result">
+      <tr>
+        <th>Month</th>
+        <th>Hours Worked</th>
       </tr>
     </table>
   </div>
