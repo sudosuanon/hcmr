@@ -32,22 +32,54 @@
       var difference = Math.abs(date2 - date1) / (1000 * 60 * 60);
 
       var table = document.getElementById('result-table');
-      var row = table.insertRow(-1);
-      var cell1 = row.insertCell(0);
-      var cell2 = row.insertCell(1);
-      var cell3 = row.insertCell(2);
-      var cell4 = row.insertCell(3);
+      var rows = Array.from(table.getElementsByTagName('tr')).slice(1, -1); // Ignore header and total rows
+      
+      // Find or create the row for this week
+      var currentWeekRow;
+      var currentWeekStart = getWeekStart(date1);
+      rows.forEach(function(row) {
+        var rowDate = new Date(row.cells[0].innerHTML);
+        var rowWeekStart = getWeekStart(rowDate);
+        if (rowWeekStart.getTime() === currentWeekStart.getTime()) {
+          currentWeekRow = row;
+        }
+      });
+      if (!currentWeekRow) {
+        currentWeekRow = table.insertRow(-1);
+        var cell1 = currentWeekRow.insertCell(0);
+        var cell2 = currentWeekRow.insertCell(1);
+        var cell3 = currentWeekRow.insertCell(2);
+        var cell4 = currentWeekRow.insertCell(3);
+        cell1.innerHTML = date1.toLocaleString('fr-FR', { dateStyle: 'short' });
+        cell2.innerHTML = time1.join(':');
+        cell3.innerHTML = time2.join(':');
+        cell4.className = 'week-total';
+      }
 
-      cell1.innerHTML = date1.toLocaleString('en-US', { dateStyle: 'short' });
-      cell2.innerHTML = time1.join(':');
-      cell3.innerHTML = time2.join(':');
-      cell4.innerHTML = difference + ' hours';
+      // Update or append hours for this week
+      var currentWeekTotalCell = currentWeekRow.cells[3];
+      var currentWeekTotalHours = parseFloat(currentWeekTotalCell.innerHTML) || 0;
+      currentWeekTotalHours += difference;
+      currentWeekTotalCell.innerHTML = currentWeekTotalHours.toFixed(2);
+
+      // Update the total row
+      var totalRow = table.rows[table.rows.length - 1];
+      var totalHours = parseFloat(totalRow.cells[3].innerHTML) || 0;
+      totalHours += difference;
+      totalRow.cells[3].innerHTML = totalHours.toFixed(2);
+    }
+
+    function getWeekStart(date) {
+      var start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+      start.setDate(date.getDate() - date.getDay()); // Start of the week (Sunday)
+      return start;
     }
   </script>
 </head>
 <body class="bg-gray-100">
   <div class="max-w-lg mx-auto bg-white p-8 border border-gray-300">
-    <h1 class="text-2xl font-bold mb-4">Date and Time Difference Calculator</h1>
+    <h1 class="text-2xl font-bold mb-4">Transports Lebranchu et fils</h1>
     <div class="mb-4">
       <label for="date1" class="font-bold">First Date:</label>
       <input type="date" id="date1" class="border border-gray-300 py-2 px-4">
@@ -62,9 +94,15 @@
     <table id="result-table" class="mt-4">
       <tr>
         <th>Date</th>
-        <th>Start Time</th>
-        <th>End Time</th>
-        <th>Difference</th>
+        <th>Heure début</th>
+        <th>Heures fin</th>
+        <th>Heures travaillées</th>
+      </tr>
+      <tr>
+        <td>Total hours per week:</td>
+        <td></td>
+        <td></td>
+        <td class="total-hours"></td>
       </tr>
     </table>
   </div>
