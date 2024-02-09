@@ -63,6 +63,23 @@
         totalHours += difference;
         weekRow.cells[1].textContent = totalHours.toFixed(2);
       }
+
+      // Sort tables by date
+      sortTableByDate('daily-results');
+      sortTableByDate('weekly-results');
+    }
+
+    function sortTableByDate(tableId) {
+      var table = document.getElementById(tableId);
+      var rows = Array.from(table.getElementsByTagName('tr')).slice(1); // Ignore header row
+      var sortedRows = rows.sort(function(a, b) {
+        var dateA = new Date(a.cells[0].textContent);
+        var dateB = new Date(b.cells[0].textContent);
+        return dateA - dateB;
+      });
+      sortedRows.forEach(function(row) {
+        table.appendChild(row); // Append sorted rows to the table
+      });
     }
 
     function getWeekNumber(date) {
@@ -100,8 +117,8 @@
     <h2 class="text-xl font-bold mt-4">Weekly Results</h2>
     <table id="weekly-results" class="mt-4">
       <tr>
-        <th>Week Number</th>
-        <th>Total Hours</th>
+        <th>Semaine</th>
+        <th>Total heures</th>
       </tr>
     </table>
   </div>
