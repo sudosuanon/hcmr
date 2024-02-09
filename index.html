@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      padding: 4rem;
+    }
+    table {
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    th {
+      background-color: #ddd;
+      font-weight: bold;
+      text-align: left;
+    }
+  </style>
+  <script>
+    function calculateDifference() {
+      var date1 = new Date(document.getElementById('date1').value);
+      var time1 = document.getElementById('time1').value.split(':');
+      date1.setHours(parseInt(time1[0]), parseInt(time1[1]));
+
+      var date2 = new Date(document.getElementById('date2').value);
+      var time2 = document.getElementById('time2').value.split(':');
+      date2.setHours(parseInt(time2[0]), parseInt(time2[1]));
+
+      var difference = Math.abs(date2 - date1) / (1000 * 60 * 60);
+
+      var table = document.getElementById('result-table');
+      var row = table.insertRow(-1);
+      var cell1 = row.insertCell(0);
+      var cell2 = row.insertCell(1);
+      var cell3 = row.insertCell(2);
+      var cell4 = row.insertCell(3);
+
+      cell1.innerHTML = date1.toLocaleString('en-US', { dateStyle: 'short' });
+      cell2.innerHTML = time1.join(':');
+      cell3.innerHTML = time2.join(':');
+      cell4.innerHTML = difference + ' hours';
+    }
+  </script>
+</head>
+<body class="bg-gray-100">
+  <div class="max-w-lg mx-auto bg-white p-8 border border-gray-300">
+    <h1 class="text-2xl font-bold mb-4">Date and Time Difference Calculator</h1>
+    <div class="mb-4">
+      <label for="date1" class="font-bold">First Date:</label>
+      <input type="date" id="date1" class="border border-gray-300 py-2 px-4">
+      <input type="time" id="time1" class="border border-gray-300 py-2 px-4">
+    </div>
+    <div class="mb-4">
+      <label for="date2" class="font-bold">Second Date:</label>
+      <input type="date" id="date2" class="border border-gray-300 py-2 px-4">
+      <input type="time" id="time2" class="border border-gray-300 py-2 px-4">
+    </div>
+    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="calculateDifference()">Calculate</button>
+    <table id="result-table" class="mt-4">
+      <tr>
+        <th>Date</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Difference</th>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>
